@@ -244,7 +244,7 @@ export class AudioManager {
         resolve();
       };
 
-      const maxMs = Math.min(5000, Math.max(3000, text.length * 150 + 1500));
+      const maxMs = Math.max(5000, text.length * 200 + 3000);
       const maxTimer = setTimeout(finish, maxMs);
       const startCheck = setTimeout(() => {
         if (!this.speechSynth.speaking && !this.speechSynth.pending) finish();

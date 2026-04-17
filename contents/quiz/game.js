@@ -69,7 +69,6 @@ export class FamilyQuiz {
       for (const t of e.changedTouches) this._onInput(t.clientX, t.clientY);
     }, { passive: false });
     this.gameCanvas.addEventListener('mousedown', e => this._onInput(e.clientX, e.clientY));
-    window.addEventListener('resize', this._boundResize);
     return this.container;
   }
 
@@ -77,6 +76,8 @@ export class FamilyQuiz {
     const d = event.contentData || {};
     this._exited = false;
     this._spokenResult = false;
+    this._layout();
+    window.addEventListener('resize', this._boundResize);
 
     this._question = {
       question: d.question || '',
