@@ -1,6 +1,6 @@
 const CHOICE_COLORS = ['#ff8a65', '#4dd0e1', '#81c784', '#ba68c8'];
 const CHOICE_BG = ['rgba(90,26,8,0.82)', 'rgba(10,74,85,0.82)', 'rgba(42,85,48,0.82)', 'rgba(58,16,80,0.82)'];
-const TIMER_MS = 20000;
+const TIMER_MS = 15000;
 const POST_READ_DELAY_MS = 1200;
 const QUIZ_INTRO_TEXT = 'じゃ、じゃーーん、ここでクイズです';
 const QUIZ_INTRO_AUDIO = 'assets/audio/guides/quiz_intro.wav';
@@ -217,6 +217,13 @@ export class FamilyQuiz {
     const prompt = `${this._question.question}`;
     try { await this.audio?.speak(prompt, { rate: 0.92 }); } catch (_) {}
     if (this._exited) return;
+    // 選択肢を読み上げ
+    const choices = this._question.choices || [];
+    for (let i = 0; i < choices.length; i++) {
+      if (this._exited) return;
+      try { await this.audio?.speak(`${i + 1}番、${choices[i]}`, { rate: 0.92 }); } catch (_) {}
+    }
+    if (this._exited) return;
     await new Promise(resolve => setTimeout(resolve, POST_READ_DELAY_MS));
     if (this._exited) return;
     this._startChoicePhase();
@@ -341,19 +348,19 @@ export class FamilyQuiz {
 
   _drawChoosing() {
     const c = this.ctx;
-    this._drawQuestionPanel('FAMILY QUIZ', this._question?.question || '', '20秒後に今の選択で判定します');
+    this._drawQuestionPanel('FAMILY QUIZ', this._question?.question || '', '15秒後に今の選択で判定します');
 
     const remain = Math.max(0, TIMER_MS - (performance.now() - this._countdownStart));
     c.fillStyle = '#ffdd66';
-    c.font = `bold ${Math.max(28, this.H * 0.05) | 0}px monospace`;
+    c.font = `bold ${Math.max(24, this.H * 0.044) | 0}px monospace`;
     c.textAlign = 'center';
-    c.fillText(`${Math.ceil(remain / 1000)}`, this.cx, this.H * 0.28);
+    c.fillText(`${Math.ceil(remain / 1000)}`, this.cx, this.H * 0.38);
 
     this._choiceRects = [];
     const cardW = Math.min(this.W * 0.88, 620);
-    const cardH = Math.min(this.H * 0.11, 96);
-    const gap = Math.min(16, this.H * 0.018);
-    const startY = this.H * 0.36;
+    const cardH = Math.min(this.H * 0.10, 88);
+    const gap = Math.min(12, this.H * 0.015);
+    const startY = this.H * 0.43;
 
     for (let i = 0; i < this._question.choices.length; i++) {
       const x = (this.W - cardW) / 2;
@@ -379,10 +386,10 @@ export class FamilyQuiz {
 
   _drawQuestionPanel(label, question, subLabel) {
     const c = this.ctx;
-    const bx = this.W * 0.05;
-    const bw = this.W * 0.9;
-    const by = this.H * 0.05;
-    const bh = this.H * 0.2;
+    const bx = this.W * 0.04;
+    const bw = this.W * 0.92;
+    const by = this.H * 0.03;
+    const bh = this.H * 0.31;
     c.fillStyle = 'rgba(4,8,30,0.78)';
     this._rrFill(bx, by, bw, bh, 18);
     c.strokeStyle = 'rgba(85,170,255,0.55)';
@@ -390,17 +397,17 @@ export class FamilyQuiz {
     this._rrFill(bx, by, bw, bh, 18, true);
 
     c.fillStyle = '#66ccff';
-    c.font = `${this.H * 0.02 | 0}px monospace`;
+    c.font = `${this.H * 0.019 | 0}px monospace`;
     c.textAlign = 'center';
-    c.fillText(label, this.cx, by + this.H * 0.045);
+    c.fillText(label, this.cx, by + this.H * 0.038);
 
     c.fillStyle = '#fff';
-    c.font = `bold ${this.H * 0.033 | 0}px sans-serif`;
-    this._wrapText(question, this.cx, by + this.H * 0.1, bw * 0.86, this.H * 0.045);
+    c.font = `bold ${this.H * 0.028 | 0}px sans-serif`;
+    this._wrapText(question, this.cx, by + this.H * 0.17, bw * 0.88, this.H * 0.038);
 
     c.fillStyle = '#b6d8f8';
-    c.font = `${this.H * 0.02 | 0}px sans-serif`;
-    c.fillText(subLabel, this.cx, by + bh - this.H * 0.03);
+    c.font = `${this.H * 0.018 | 0}px sans-serif`;
+    c.fillText(subLabel, this.cx, by + bh - this.H * 0.022);
   }
 
   _drawResult() {
