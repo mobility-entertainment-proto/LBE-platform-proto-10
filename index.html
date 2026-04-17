@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<!-- LBE-platform-proto-4: バスガイド型 飯倉→お台場 -->
+<!-- LBE-platform-proto-10: 東京ミッドタウン → お台場 / 浅草 / 吉祥寺 -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Bus Guide LBE — 飯倉→お台場</title>
+<title>Bus Guide LBE — 東京ミッドタウン発</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -29,60 +29,97 @@ html,body{width:100%;height:100%;overflow:hidden;background:#04040e;
 #config-subtitle{font-size:11px;color:#334;letter-spacing:2px;margin-bottom:24px;}
 #config-gps-status{
   width:100%;max-width:520px;
-  margin-bottom:14px;padding:10px 12px;
+  margin-bottom:20px;padding:10px 12px;
   background:#0a0f1f;border:1px solid #223252;border-radius:10px;
   color:#88aacc;font-size:12px;letter-spacing:1px;text-align:center;
 }
 
-.ev-card{
+/* ── Destination selector ── */
+#dest-selector{
   width:100%;max-width:520px;
   background:#0d0d20;border:1px solid #2a2a4a;border-radius:12px;
-  padding:14px 16px;margin-bottom:12px;
+  padding:20px;margin-bottom:16px;
 }
-.ev-card-header{
-  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+#dest-label{
+  font-size:11px;color:#88aacc;letter-spacing:2px;margin-bottom:12px;
+  text-align:center;
 }
-.ev-step{
-  width:26px;height:26px;border-radius:50%;
-  background:#1a1a40;border:1px solid #334488;
-  font-size:11px;color:#6688cc;display:flex;align-items:center;justify-content:center;
+#dest-select{
+  width:100%;padding:14px 16px;
+  background:#04040e;border:1px solid #2a3a60;border-radius:8px;
+  color:#ccddff;font-family:monospace;font-size:clamp(14px,3.5vw,16px);
+  letter-spacing:1px;outline:none;cursor:pointer;margin-bottom:14px;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2355aaff' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;
+  padding-right:40px;
+}
+#dest-select:focus{border-color:#55aaff;}
+#dest-select option{background:#04040e;color:#ccddff;}
+
+#config-set-btn{
+  width:100%;padding:14px;border-radius:8px;
+  background:#0a1520;border:1px solid #334a6a;color:#88aacc;
+  font-family:monospace;font-size:clamp(13px,3vw,15px);
+  font-weight:bold;cursor:pointer;letter-spacing:2px;
+  touch-action:manipulation;transition:all .2s;
+}
+#config-set-btn:hover{border-color:#55aaff;color:#aaccff;}
+#config-set-btn:active{background:#0d1a2a;}
+#config-set-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* ── Plan preview ── */
+#plan-preview{
+  width:100%;max-width:520px;
+  background:#080818;border:1px solid #1a2a44;border-radius:12px;
+  padding:16px;margin-bottom:16px;
+}
+#plan-preview.hidden{display:none;}
+#plan-header{
+  font-size:11px;color:#445;letter-spacing:2px;
+  margin-bottom:12px;text-align:center;
+}
+#plan-route-label{
+  font-size:13px;color:#66aaff;letter-spacing:1px;
+  margin-bottom:10px;text-align:center;
+}
+#plan-list{
+  display:flex;flex-direction:column;gap:6px;
+  max-height:220px;overflow-y:auto;
+}
+.plan-item{
+  display:flex;align-items:center;gap:10px;
+  padding:7px 10px;
+  background:#0a0a1c;border:1px solid #1a1a30;border-radius:7px;
+}
+.plan-item-num{
+  width:22px;height:22px;border-radius:50%;
+  background:#111128;border:1px solid #2a2a48;
+  font-size:10px;color:#445;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;
 }
-.ev-name{font-size:clamp(13px,3.5vw,15px);color:#88aaff;letter-spacing:1px;}
-.ev-type{
-  margin-left:auto;font-size:10px;background:#101a30;
-  border:1px solid #2a3a60;border-radius:4px;
-  padding:2px 7px;color:#4466aa;letter-spacing:1px;flex-shrink:0;
+.plan-item-icon{font-size:14px;flex-shrink:0;}
+.plan-item-name{font-size:11px;color:#88aacc;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.plan-item-type{
+  font-size:10px;padding:2px 6px;border-radius:4px;flex-shrink:0;
+  letter-spacing:1px;
 }
-.ev-radius-row{
-  display:flex;align-items:center;gap:8px;
-}
-.ev-radius-row label{font-size:10px;color:#445;letter-spacing:1px;white-space:nowrap;}
-.ev-radius-num{
-  width:66px;padding:6px 8px;background:#04040e;
-  border:1px solid #2a2a4a;border-radius:6px;
-  color:#eee;font-family:monospace;font-size:13px;
-  outline:none;touch-action:manipulation;text-align:center;
-}
-.ev-radius-num:focus{border-color:#55aaff;}
-.ev-radius-slider{flex:1;accent-color:#55aaff;}
-.ev-reset-btn{
-  padding:5px 9px;background:#0a0a1c;border:1px solid #2a2a4a;
-  border-radius:5px;color:#556;font-size:10px;cursor:pointer;
-  font-family:monospace;white-space:nowrap;touch-action:manipulation;
-}
-.ev-reset-btn:active{background:#141428;color:#88aaff;}
-.ev-coord{font-size:10px;color:#334;letter-spacing:0.5px;margin-top:6px;}
+.plan-item-type.guide{background:#0a1520;border:1px solid #1a3050;color:#4488aa;}
+.plan-item-type.quiz {background:#1a1000;border:1px solid #3a2a00;color:#aa8844;}
 
+/* ── Buttons ── */
 #config-start-btn{
   width:100%;max-width:520px;
   padding:18px;border-radius:12px;
   background:#0e1a30;border:2px solid #55aaff;color:#66ccff;
   font-family:monospace;font-size:clamp(15px,3.5vw,20px);
   font-weight:bold;cursor:pointer;letter-spacing:3px;
-  margin-top:10px;touch-action:manipulation;
+  margin-top:6px;touch-action:manipulation;
 }
 #config-start-btn:active{background:#1a2a44;}
+#config-start-btn:disabled{
+  opacity:0.3;cursor:not-allowed;border-color:#334;color:#446;
+}
 
 /* ══ Status screen ══════════════════════════════════════════════ */
 #status-screen{
@@ -126,11 +163,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#04040e;
   text-shadow:0 0 12px rgba(85,170,255,0.18);
 }
 
-#status-progress{display:flex;gap:10px;margin-bottom:28px;}
+#status-progress{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;justify-content:center;}
 .sp-dot{
   width:12px;height:12px;border-radius:50%;
   background:#1a1a30;border:1px solid #2a2a44;transition:all .3s;
-  cursor:default;
 }
 .sp-dot.done  {background:#55aaff;border-color:#55aaff;box-shadow:0 0 6px #55aaff;}
 .sp-dot.active{background:#ffcc44;border-color:#ffcc44;box-shadow:0 0 8px #ffcc44;
@@ -208,11 +244,28 @@ html,body{width:100%;height:100%;overflow:hidden;background:#04040e;
 <!-- ━━ Config screen ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
 <div id="config-screen">
   <div id="config-title">BUS GUIDE LBE</div>
-  <div id="config-route">飯倉 → 首都高C1〜B → お台場</div>
+  <div id="config-route">東京ミッドタウン 発</div>
   <div id="config-subtitle">LOCATION BASED ENTERTAINMENT</div>
   <div id="config-gps-status">GPS: 設定画面で位置情報を確認中...</div>
-  <div id="config-cards"></div>
-  <button id="config-start-btn">▶ START</button>
+
+  <div id="dest-selector">
+    <div id="dest-label">目的地を選択してください</div>
+    <select id="dest-select">
+      <option value="">── 目的地を選んでください ──</option>
+      <option value="odaiba">🌊　お台場（日本科学未来館）</option>
+      <option value="asakusa">⛩️　浅草（浅草寺）</option>
+      <option value="kichijoji">🌸　吉祥寺（井の頭公園）</option>
+    </select>
+    <button id="config-set-btn" disabled>🎲　SET（コンテンツを抽選）</button>
+  </div>
+
+  <div id="plan-preview" class="hidden">
+    <div id="plan-header">CONTENT PLAN</div>
+    <div id="plan-route-label"></div>
+    <div id="plan-list"></div>
+  </div>
+
+  <button id="config-start-btn" disabled>▶ START</button>
 </div>
 
 <!-- ━━ Status screen ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
@@ -220,13 +273,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#04040e;
   <canvas id="status-bg"></canvas>
   <div id="status-overlay"></div>
   <div id="status-content">
-  <div id="status-title">BUS GUIDE LBE</div>
-  <div id="status-route">飯倉 → 首都高 → お台場</div>
-  <div id="status-next-label">NEXT EVENT</div>
-  <div id="status-event-name">—</div>
-  <div id="status-dist">—</div>
-  <div id="status-dist-unit"></div>
-  <div id="status-progress"></div>
+    <div id="status-title">BUS GUIDE LBE</div>
+    <div id="status-route">東京ミッドタウン → —</div>
+    <div id="status-next-label">NEXT EVENT</div>
+    <div id="status-event-name">—</div>
+    <div id="status-dist">—</div>
+    <div id="status-dist-unit"></div>
+    <div id="status-progress"></div>
   </div>
   <div id="status-gps">GPS: 取得待機中</div>
 </div>
@@ -261,149 +314,38 @@ import { EventEngine }     from './core/event-engine.js';
 import { RoadBackground }  from './core/road-background.js';
 import { GuideCard }       from './contents/guide-card/game.js';
 import { FamilyQuiz }      from './contents/quiz/game.js';
-import { ShortRhythmGame } from './contents/rhythm-short/game.js';
 
-// ── イベント定義（ルート順） ──────────────────────────────────────
-const EVENT_DEFS = [
-  {
-    id:            'event_intro_miraikan',
-    name:          '未来館への導入',
-    icon:          '🏛️',
-    lat:           35.6578,
-    lng:           139.7385,
-    defaultRadius: 400,
-    minRadius:     150,
-    contentType:   'guide',
-    contentData: {
-      icon:  '🏛️',
-      title: '今日の目的地は科学未来館',
-      body:  '今日はお台場の日本科学未来館へ向かいます。未来館には、地球を映し出す大きなシンボル展示「ジオ・コスモス」があります。到着したら、家族で"いちばん未来っぽい"と思った展示を1つ決めてみましょう。',
-      audioSrc: 'assets/audio/guides/event_intro_miraikan.wav',
-    },
+// ── Route meta ────────────────────────────────────────────────────
+const ROUTE_META = {
+  odaiba: {
+    label:    'お台場（日本科学未来館）',
+    statusLabel: '東京ミッドタウン → お台場',
+    announcement: 'こんにちは！今日は東京ミッドタウンを出発して、お台場の日本科学未来館を目指します。六本木・芝浦・レインボーブリッジを通り抜けながら、道中の観光スポットをガイドとクイズでご紹介します。それでは出発しましょう！',
   },
-  {
-    id:            'event_shutoko_guide',
-    name:          '首都高ガイド',
-    icon:          '🛣️',
-    lat:           35.6488,
-    lng:           139.7488,
-    defaultRadius: 500,
-    minRadius:     200,
-    contentType:   'guide',
-    contentData: {
-      icon:   '🛣️',
-      title:  '東京の高速道路は、どうしてこんなに複雑？',
-      body:   '東京の高速道路が複雑なのは、巨大な街ができたあとに、その上へ道路を通していったからです。まっすぐ作る余裕が少なく、建物や川をよけながら通したため、東京らしい独特な形になりました。',
-      footer: 'このあと、海へ抜ける景色に変わっていきます。',
-      audioSrc: 'assets/audio/guides/event_shutoko_guide.wav',
-    },
+  asakusa: {
+    label:    '浅草（浅草寺）',
+    statusLabel: '東京ミッドタウン → 浅草',
+    announcement: 'こんにちは！今日は東京ミッドタウンを出発して、浅草を目指します。赤坂・神楽坂・秋葉原・蔵前を通り抜ける旅、道中の観光ガイドとクイズをお楽しみください。それでは出発しましょう！',
   },
-  {
-    id:            'event_family_quiz',
-    name:          '家族4択クイズ',
-    icon:          '🧠',
-    lat:           35.6438,
-    lng:           139.7588,
-    defaultRadius: 550,
-    minRadius:     220,
-    contentType:   'quiz',
-    contentData: {
-      question:     'このあと向かう日本科学未来館で、いちばん"未来っぽい"展示テーマとして有名なのはどれだと思う？',
-      choices:      ['ロボット', '恐竜', '忍者', 'お城'],
-      correctIndex: 0,
-      correctMsg:   '正解はロボット。科学未来館ではロボットや地球、宇宙、未来のくらしに関する展示が人気です。着いたら、家族で"いちばん未来っぽかった展示"をあとで話してみましょう。',
-      wrongMsg:     '正解はロボット。でも、恐竜や忍者がいても面白そうですね。着いたら"自分だったらどんな未来館にするか"も話してみましょう。',
-    },
+  kichijoji: {
+    label:    '吉祥寺（井の頭公園）',
+    statusLabel: '東京ミッドタウン → 吉祥寺',
+    announcement: 'こんにちは！今日は東京ミッドタウンを出発して、吉祥寺を目指します。表参道・渋谷・新宿・中央線沿いの街々を通りながら、観光ガイドとクイズでその魅力をお伝えします。それでは出発しましょう！',
   },
-  {
-    id:            'event_rainbow_bridge_prelude',
-    name:          'レインボーブリッジ予告',
-    icon:          '🌉',
-    lat:           35.6408,
-    lng:           139.7628,
-    defaultRadius: 450,
-    minRadius:     180,
-    contentType:   'guide',
-    contentData: {
-      icon:      '🌉',
-      title:     'まもなくレインボーブリッジ',
-      body:      'ここから景色が大きく開けて、お台場へ入っていきます。橋に入ったら、短いリズムゲームが始まります。',
-      audioSrc: 'assets/audio/guides/event_rainbow_bridge_prelude.wav',
-    },
-  },
-  {
-    id:            'event_rhythm_rainbow_bridge',
-    name:          'リズムゲーム（レインボーブリッジ）',
-    icon:          '🎮',
-    lat:           35.6388,
-    lng:           139.7648,
-    defaultRadius: 350,
-    minRadius:     120,
-    contentType:   'rhythm-short',
-    contentData: {
-      endMessage: 'お台場エリアに入りました。科学未来館まで、もうすぐです。',
-    },
-  },
-];
-
-// ── localStorage ─────────────────────────────────────────────────
-const START_ANNOUNCEMENT = {
-  title: 'AFEELA GUIDE',
-  text: 'こんにちは！私はアフィーラ。今日の目的地はお台場の科学未来館ですね。私が目的地までガイドさせてもらいます！途中でクイズやゲームがあるのでお楽しみに！',
-  audioSrc: 'assets/audio/guides/start_announcement.wav',
 };
-
-const LS_KEY = 'lbe4_event_radii';
-function loadRadii() {
-  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(_) { return {}; }
-}
-function saveRadii(map) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(map)); } catch(_) {}
-}
-
-function updateConfigGpsStatus(text, tone = 'default') {
-  if (!configGpsStatus) return;
-  configGpsStatus.textContent = text;
-  configGpsStatus.style.color =
-    tone === 'ok' ? '#9fe3b1' :
-    tone === 'warn' ? '#ffd37a' :
-    tone === 'error' ? '#ff9c9c' :
-    '#88aacc';
-}
-
-function requestGpsPreflight() {
-  if (gpsPreflightRequested) return;
-  gpsPreflightRequested = true;
-
-  if (!navigator.geolocation) {
-    updateConfigGpsStatus('GPS: このブラウザでは位置情報を利用できません', 'error');
-    return;
-  }
-
-  updateConfigGpsStatus('GPS: 位置情報の許可を確認してください', 'warn');
-
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      updateConfigGpsStatus(
-        `GPS: 許可済み ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`,
-        'ok'
-      );
-    },
-    err => {
-      const detail = err?.message ? ` (${err.message})` : '';
-      updateConfigGpsStatus(`GPS: 許可待ちまたは取得失敗${detail}`, 'warn');
-    },
-    { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 }
-  );
-}
 
 // ── DOM refs ──────────────────────────────────────────────────────
 const configScreen     = document.getElementById('config-screen');
-const configCards      = document.getElementById('config-cards');
 const configGpsStatus  = document.getElementById('config-gps-status');
+const destSelect       = document.getElementById('dest-select');
+const configSetBtn     = document.getElementById('config-set-btn');
+const planPreview      = document.getElementById('plan-preview');
+const planRouteLabel   = document.getElementById('plan-route-label');
+const planList         = document.getElementById('plan-list');
 const statusScreen     = document.getElementById('status-screen');
 const statusBgCanvas   = document.getElementById('status-bg');
 const contentContainer = document.getElementById('content-container');
+const statusRouteEl    = document.getElementById('status-route');
 const statusEventName  = document.getElementById('status-event-name');
 const statusDist       = document.getElementById('status-dist');
 const statusDistUnit   = document.getElementById('status-dist-unit');
@@ -416,91 +358,192 @@ const dbgLog           = document.getElementById('dbg-log');
 // ── State ─────────────────────────────────────────────────────────
 const audioManager = new AudioManager();
 const statusBackground = new RoadBackground({ speed: 8 });
-let engine = null;
-let events = [];   // working copy with resolved .radius
+let engine       = null;
+let events       = [];   // generated content plan as EventEngine events
 let activeContent  = null;
-let lastStatus = null;
+let lastStatus   = null;
 let gpsPreflightRequested = false;
 
 statusBackground.attach(statusBgCanvas);
 
-// ── Build config cards ────────────────────────────────────────────
-const TYPE_LABELS = {
-  'guide':        'ガイド',
-  'quiz':         'クイズ',
-  'rhythm-short': 'リズムゲーム',
-};
-const savedRadii = loadRadii();
-
-for (let i = 0; i < EVENT_DEFS.length; i++) {
-  const def = EVENT_DEFS[i];
-  const saved = savedRadii[def.id];
-  const initRadius = (saved !== undefined)
-    ? Math.max(def.minRadius, +saved)
-    : def.defaultRadius;
-
-  const card = document.createElement('div');
-  card.className = 'ev-card';
-  card.dataset.evId = def.id;
-  card.innerHTML = `
-    <div class="ev-card-header">
-      <div class="ev-step">${i + 1}</div>
-      <div class="ev-name">${def.icon} ${def.name}</div>
-      <div class="ev-type">${TYPE_LABELS[def.contentType] || def.contentType}</div>
-    </div>
-    <div class="ev-radius-row">
-      <label>半径</label>
-      <input type="number" class="ev-radius-num" data-id="${def.id}"
-        value="${initRadius}" min="${def.minRadius}" max="5000" step="10">
-      <input type="range" class="ev-radius-slider" data-id="${def.id}"
-        value="${Math.min(initRadius, 2000)}" min="${def.minRadius}" max="2000" step="10">
-      <button class="ev-reset-btn" data-id="${def.id}" data-default="${def.defaultRadius}">↺ 初期値</button>
-    </div>
-    <div class="ev-coord">📍 ${def.lat.toFixed(4)}, ${def.lng.toFixed(4)} | 最小${def.minRadius}m</div>
-  `;
-  configCards.appendChild(card);
+// ── GPS preflight ─────────────────────────────────────────────────
+function updateConfigGpsStatus(text, tone = 'default') {
+  configGpsStatus.textContent = text;
+  configGpsStatus.style.color =
+    tone === 'ok'    ? '#9fe3b1' :
+    tone === 'warn'  ? '#ffd37a' :
+    tone === 'error' ? '#ff9c9c' :
+    '#88aacc';
 }
 
-// Wire number ↔ slider sync
-configCards.querySelectorAll('.ev-radius-num').forEach(num => {
-  const id     = num.dataset.id;
-  const slider = configCards.querySelector(`.ev-radius-slider[data-id="${id}"]`);
-  num.addEventListener('input', () => {
-    const def = EVENT_DEFS.find(d => d.id === id);
-    const v = Math.max(def.minRadius, +num.value);
-    num.value    = v;
-    slider.value = Math.min(v, 2000);
-    _autoSaveRadii();
-  });
-  slider.addEventListener('input', () => {
-    num.value = slider.value;
-    _autoSaveRadii();
-  });
-});
-
-// Reset buttons
-configCards.querySelectorAll('.ev-reset-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const id  = btn.dataset.id;
-    const def = +btn.dataset.default;
-    configCards.querySelector(`.ev-radius-num[data-id="${id}"]`).value   = def;
-    const sl = configCards.querySelector(`.ev-radius-slider[data-id="${id}"]`);
-    if (sl) sl.value = Math.min(def, 2000);
-    _autoSaveRadii();
-  });
-});
-
-function _autoSaveRadii() {
-  const map = {};
-  configCards.querySelectorAll('.ev-radius-num').forEach(n => { map[n.dataset.id] = +n.value; });
-  saveRadii(map);
+function requestGpsPreflight() {
+  if (gpsPreflightRequested) return;
+  gpsPreflightRequested = true;
+  if (!navigator.geolocation) {
+    updateConfigGpsStatus('GPS: このブラウザでは位置情報を利用できません', 'error');
+    return;
+  }
+  updateConfigGpsStatus('GPS: 位置情報の許可を確認してください', 'warn');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      updateConfigGpsStatus(
+        `GPS: 許可済み ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`, 'ok'
+      );
+    },
+    err => {
+      const detail = err?.message ? ` (${err.message})` : '';
+      updateConfigGpsStatus(`GPS: 許可待ちまたは取得失敗${detail}`, 'warn');
+    },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 }
+  );
 }
+
+requestGpsPreflight();
+configScreen.addEventListener('pointerdown', requestGpsPreflight, { once: true });
+
+// ── Destination select ────────────────────────────────────────────
+destSelect.addEventListener('change', () => {
+  const hasValue = destSelect.value !== '';
+  configSetBtn.disabled = !hasValue;
+  // Reset plan when destination changes
+  planPreview.classList.add('hidden');
+  document.getElementById('config-start-btn').disabled = true;
+  events = [];
+});
+
+// ── Build content plan from JSONs ─────────────────────────────────
+async function buildPlan(route) {
+  const [guidesData, quizzesData] = await Promise.all([
+    fetch('data/guides.json').then(r => r.json()),
+    fetch('data/quizzes.json').then(r => r.json()),
+  ]);
+
+  const guides  = guidesData.items
+    .filter(g => g.route === route)
+    .sort((a, b) => a.segment_index - b.segment_index);
+  const quizzes = quizzesData.items
+    .filter(q => q.route === route)
+    .sort((a, b) => a.segment_index - b.segment_index);
+
+  const plan = [];
+  const maxSeg = Math.max(
+    guides.length  ? guides[guides.length - 1].segment_index  : 0,
+    quizzes.length ? quizzes[quizzes.length - 1].segment_index : 0
+  );
+
+  for (let seg = 1; seg <= maxSeg; seg++) {
+    const guide = guides.find(g => g.segment_index === seg);
+    const quiz  = quizzes.find(q => q.segment_index === seg);
+
+    let chosen, type;
+    if (seg === 1) {
+      // 最初は必ずガイド
+      if (guide) { chosen = guide; type = 'guide'; }
+      else if (quiz) { chosen = quiz; type = 'quiz'; }
+      else continue;
+    } else {
+      // 以降はランダム（ガイド・クイズが両方ある場合は50/50）
+      const useGuide = Math.random() < 0.5;
+      if (useGuide && guide)       { chosen = guide; type = 'guide'; }
+      else if (!useGuide && quiz)  { chosen = quiz;  type = 'quiz';  }
+      else if (guide)              { chosen = guide; type = 'guide'; }
+      else if (quiz)               { chosen = quiz;  type = 'quiz';  }
+      else continue;
+    }
+
+    plan.push({ type, item: chosen });
+  }
+
+  return plan;
+}
+
+// ── Plan → EventEngine event format ──────────────────────────────
+function planItemToEvent(type, item) {
+  if (type === 'guide') {
+    return {
+      id:          item.id,
+      name:        item.location_name,
+      icon:        '🗺️',
+      lat:         item.lat,
+      lng:         item.lng,
+      radius:      item.radius,
+      defaultRadius: item.radius,
+      minRadius:   100,
+      contentType: 'guide',
+      contentData: {
+        title:  item.content.title,
+        body:   item.content.body,
+        footer: item.content.footer || '',
+      },
+    };
+  } else {
+    return {
+      id:          item.id,
+      name:        item.location_name,
+      icon:        '🧠',
+      lat:         item.lat,
+      lng:         item.lng,
+      radius:      item.radius,
+      defaultRadius: item.radius,
+      minRadius:   100,
+      contentType: 'quiz',
+      contentData: {
+        question:     item.content.question,
+        choices:      item.content.choices,
+        correctIndex: item.content.correctIndex,
+        correctMsg:   item.content.correctMsg,
+        wrongMsg:     item.content.wrongMsg,
+        explanation:  item.content.explanation || '',
+      },
+    };
+  }
+}
+
+// ── SET button ────────────────────────────────────────────────────
+configSetBtn.addEventListener('click', async () => {
+  const route = destSelect.value;
+  if (!route) return;
+
+  configSetBtn.disabled = true;
+  configSetBtn.textContent = '⏳　抽選中...';
+
+  try {
+    const plan = await buildPlan(route);
+    events = plan.map(({ type, item }) => planItemToEvent(type, item));
+
+    // Render plan preview
+    const meta = ROUTE_META[route];
+    planRouteLabel.textContent = `東京ミッドタウン → ${meta.label}`;
+    planList.innerHTML = '';
+    events.forEach((ev, i) => {
+      const div = document.createElement('div');
+      div.className = 'plan-item';
+      div.innerHTML = `
+        <div class="plan-item-num">${i + 1}</div>
+        <div class="plan-item-icon">${ev.icon}</div>
+        <div class="plan-item-name">${ev.name}</div>
+        <div class="plan-item-type ${ev.contentType === 'guide' ? 'guide' : 'quiz'}">
+          ${ev.contentType === 'guide' ? 'ガイド' : 'クイズ'}
+        </div>
+      `;
+      planList.appendChild(div);
+    });
+
+    planPreview.classList.remove('hidden');
+    document.getElementById('config-start-btn').disabled = false;
+  } catch (e) {
+    console.error('buildPlan error:', e);
+    configSetBtn.textContent = '⚠️　読み込み失敗（再試行）';
+  } finally {
+    configSetBtn.disabled = false;
+    configSetBtn.textContent = '🎲　SET（コンテンツを抽選）';
+  }
+});
 
 // ── Content instances ─────────────────────────────────────────────
 const contentRegistry = {
-  'guide':        new GuideCard(audioManager),
-  'quiz':         new FamilyQuiz(audioManager),
-  'rhythm-short': new ShortRhythmGame(audioManager),
+  'guide': new GuideCard(audioManager),
+  'quiz':  new FamilyQuiz(audioManager),
 };
 
 for (const [key, content] of Object.entries(contentRegistry)) {
@@ -513,17 +556,14 @@ for (const [key, content] of Object.entries(contentRegistry)) {
 // ── Progress dots ─────────────────────────────────────────────────
 function buildProgressDots() {
   statusProgress.innerHTML = '';
-  for (let i = 0; i < EVENT_DEFS.length; i++) {
+  for (let i = 0; i < events.length; i++) {
     const dot = document.createElement('div');
     dot.className = 'sp-dot';
     dot.id = `sp-dot-${i}`;
-    dot.title = EVENT_DEFS[i].name;
+    dot.title = events[i].name;
     statusProgress.appendChild(dot);
   }
 }
-buildProgressDots();
-requestGpsPreflight();
-configScreen.addEventListener('pointerdown', requestGpsPreflight, { once: true });
 
 function updateProgressDots(states) {
   states.forEach((s, i) => {
@@ -533,13 +573,6 @@ function updateProgressDots(states) {
     if (s.status === 'active') dot.classList.add('active');
     if (s.status === 'fired')  dot.classList.add('done');
   });
-}
-
-function resetProgressDots() {
-  for (let i = 0; i < EVENT_DEFS.length; i++) {
-    const dot = document.getElementById(`sp-dot-${i}`);
-    if (dot) dot.className = 'sp-dot';
-  }
 }
 
 // ── Show / hide content ───────────────────────────────────────────
@@ -559,6 +592,7 @@ function hideContent() {
   activeContent = null;
 }
 
+// ── Status render ─────────────────────────────────────────────────
 function renderStatusData({ lat, lng, distToNext, nextEvent, activeIndex, currentIndex, totalEvents }) {
   statusGps.textContent = lat != null
     ? `GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`
@@ -572,38 +606,32 @@ function renderStatusData({ lat, lng, distToNext, nextEvent, activeIndex, curren
   } else if (nextEvent) {
     statusEventName.textContent = `${nextEvent.icon} ${nextEvent.name}`;
     if (distToNext < 1) {
-      statusDist.textContent = 'エリア内';
+      statusDist.textContent     = 'エリア内';
       statusDistUnit.textContent = '';
     } else {
-      statusDist.textContent = distToNext.toFixed(0);
+      statusDist.textContent     = distToNext.toFixed(0);
       statusDistUnit.textContent = 'm まで';
     }
-  } else {
-    statusEventName.textContent = '全イベント完了';
-    statusDist.textContent = '';
-    statusDistUnit.textContent = '';
-  }
-
-  if (activeIndex < 0 && !nextEvent && currentIndex < totalEvents) {
-    const firstEvent = events[0];
-    statusEventName.textContent = firstEvent ? `${firstEvent.icon} ${firstEvent.name}` : 'NEXT EVENT';
-    statusDist.textContent = '--';
-    statusDistUnit.textContent = 'GPS取得待ち';
-  }
-
-  if (activeIndex < 0 && nextEvent) {
     if (distToNext < 1) {
-      statusDist.textContent = '0';
+      statusDist.textContent     = '0';
       statusDistUnit.textContent = 'm | ジオフェンス内です';
     } else {
       statusDistUnit.textContent = 'm で次のイベントが発動';
     }
+  } else if (currentIndex < totalEvents) {
+    statusEventName.textContent = events[0] ? `${events[0].icon} ${events[0].name}` : 'NEXT EVENT';
+    statusDist.textContent      = '--';
+    statusDistUnit.textContent  = 'GPS取得待ち';
+  } else {
+    statusEventName.textContent = '全イベント完了 🎉';
+    statusDist.textContent      = '';
+    statusDistUnit.textContent  = '';
   }
 
   if (engine) updateProgressDots(engine.getEventStates());
 
-  const latStr = lat != null ? lat.toFixed(6) : '—';
-  const lngStr = lng != null ? lng.toFixed(6) : '—';
+  const latStr  = lat != null ? lat.toFixed(6) : '—';
+  const lngStr  = lng != null ? lng.toFixed(6) : '—';
   const distStr = distToNext < Infinity ? `${distToNext.toFixed(0)}m` : '—';
   const nextName = currentIndex < totalEvents ? events[currentIndex]?.name : '(全完了)';
   dbgGps.textContent = `${latStr}, ${lngStr}\n次まで: ${distStr} | 待ち[${currentIndex}/${totalEvents}]: ${nextName}`;
@@ -615,16 +643,32 @@ function renderStatusData({ lat, lng, distToNext, nextEvent, activeIndex, curren
 }
 
 function renderStartAnnouncementStatus() {
-  statusEventName.textContent = START_ANNOUNCEMENT.title;
+  statusEventName.textContent = 'BUS GUIDE LBE';
   statusDist.textContent = '';
   statusDistUnit.textContent = '出発アナウンスを再生中';
   statusGps.textContent = 'GPS: ガイド開始前';
-  resetProgressDots();
   dbgGps.textContent = '出発アナウンスを再生中';
   _updateDebugLog();
 }
 
-function setupEngineAndStart() {
+// ── START button ──────────────────────────────────────────────────
+document.getElementById('config-start-btn').addEventListener('click', async () => {
+  if (!events.length) return;
+
+  const route = destSelect.value;
+  const meta  = ROUTE_META[route];
+
+  audioManager.unlock();
+  audioManager.stopSpeech();
+  statusBackground.start();
+
+  // Update status screen route label
+  statusRouteEl.textContent = meta.statusLabel;
+
+  // Build progress dots from events
+  buildProgressDots();
+
+  // Setup engine
   engine = new EventEngine(events);
   lastStatus = null;
 
@@ -654,137 +698,29 @@ function setupEngineAndStart() {
     if (content?.onExit) content.onExit();
   };
 
+  // Switch screens
+  configScreen.classList.add('hidden');
+  statusScreen.classList.remove('hidden');
+  renderStartAnnouncementStatus();
+
+  // Start announcement
+  try {
+    await audioManager.speak(meta.announcement, { rate: 0.9 });
+  } catch (_) {}
+
+  // Start geofence engine
   engine.start((data) => {
     lastStatus = data;
     renderStatusData(data);
   });
 
   _updateDebugEvents();
-}
-
-// ── START button ──────────────────────────────────────────────────
-document.getElementById('config-start-btn').addEventListener('click', async () => {
-  audioManager.unlock();
-  audioManager.stopSpeech();
-  statusBackground.start();
-
-  // Build events with resolved radii from UI
-  events = EVENT_DEFS.map(def => {
-    const numEl  = configCards.querySelector(`.ev-radius-num[data-id="${def.id}"]`);
-    const radius = numEl ? Math.max(def.minRadius, +numEl.value) : def.defaultRadius;
-    return { ...def, radius };
-  });
-
-  engine = new EventEngine(events);
-
-  engine.onEventFire = (ev) => {
-    const content = contentRegistry[ev.contentType];
-    if (!content) return;
-    content.onComplete = () => {
-      const afterCompleteNarration =
-        typeof content.consumeAfterCompleteNarration === 'function'
-          ? content.consumeAfterCompleteNarration()
-          : null;
-      engine.markComplete();
-      hideContent();
-      if (afterCompleteNarration) {
-        audioManager.speak(afterCompleteNarration.text, {
-          rate: afterCompleteNarration.rate || 0.9,
-          audioSrc: afterCompleteNarration.audioSrc,
-        });
-      }
-    };
-    showContent(ev.contentType);
-    content.onEnter(ev);
-  };
-
-  engine.onEventExit = (ev) => {
-    const content = contentRegistry[ev.contentType];
-    if (content?.onExit) content.onExit();
-  };
-
-  configScreen.classList.add('hidden');
-  statusScreen.classList.remove('hidden');
-  renderStartAnnouncementStatus();
-
-  try {
-    await audioManager.speak(START_ANNOUNCEMENT.text, {
-      rate: 0.9,
-      audioSrc: START_ANNOUNCEMENT.audioSrc,
-    });
-  } catch (_) {}
-
-  engine.start(({ msg, lat, lng, distToNext, nextEvent, activeIndex, currentIndex, totalEvents }) => {
-    lastStatus = { msg, lat, lng, distToNext, nextEvent, activeIndex, currentIndex, totalEvents };
-    renderStatusData(lastStatus);
-    return;
-
-    // Status screen
-    statusGps.textContent = lat != null
-      ? `GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`
-      : 'GPS: 取得待機中';
-
-    if (activeIndex >= 0) {
-      const ev = events[activeIndex];
-      statusEventName.textContent = `${ev.icon} ${ev.name}`;
-      statusDist.textContent      = '発動中';
-      statusDistUnit.textContent  = '現在このイベントを表示中';
-    } else if (nextEvent) {
-      statusEventName.textContent = `${nextEvent.icon} ${nextEvent.name}`;
-      if (distToNext < 1) {
-        statusDist.textContent     = 'エリア内';
-        statusDistUnit.textContent = '';
-      } else {
-        statusDist.textContent     = distToNext.toFixed(0);
-        statusDistUnit.textContent = 'm まで';
-      }
-    } else {
-      statusEventName.textContent = '全イベント完了 🎉';
-      statusDist.textContent      = '';
-      statusDistUnit.textContent  = '';
-    }
-
-    if (activeIndex < 0 && !nextEvent && currentIndex < totalEvents) {
-      const firstEvent = events[0];
-      statusEventName.textContent = firstEvent ? `${firstEvent.icon} ${firstEvent.name}` : 'NEXT EVENT';
-      statusDist.textContent = '--';
-      statusDistUnit.textContent = 'GPS取得待ち';
-    }
-
-    if (activeIndex < 0 && nextEvent) {
-      if (distToNext < 1) {
-        statusDist.textContent = '0';
-        statusDistUnit.textContent = 'm | ジオフェンス内です';
-      } else {
-        statusDistUnit.textContent = 'm で次のイベントが発動';
-      }
-    }
-
-    if (engine) updateProgressDots(engine.getEventStates());
-
-    // Debug panel (always refresh GPS, events only if open)
-    const latStr = lat != null ? lat.toFixed(6) : '—';
-    const lngStr = lng != null ? lng.toFixed(6) : '—';
-    const distStr = (distToNext < Infinity) ? distToNext.toFixed(0) + 'm' : '—';
-    const nextName = currentIndex < totalEvents ? events[currentIndex]?.name : '(全完了)';
-    dbgGps.textContent =
-      `${latStr}, ${lngStr}\n次まで: ${distStr} | 待ち[${currentIndex}/${totalEvents}]: ${nextName}`;
-
-    if (document.getElementById('debug-panel').classList.contains('open')) {
-      _updateDebugEvents();
-    }
-    _updateDebugLog();
-  });
-
-  configScreen.classList.add('hidden');
-  statusScreen.classList.remove('hidden');
-  _updateDebugEvents();
 });
 
 // ── Debug helpers ─────────────────────────────────────────────────
 function _updateDebugEvents() {
   if (!engine) return;
-  const states = engine.getEventStates();
+  const states  = engine.getEventStates();
   dbgEvents.innerHTML = '';
   const labelMap = { pending:'待機中', waiting:'→次に発火', active:'●発動中', fired:'完了済' };
   states.forEach(s => {
@@ -799,8 +735,6 @@ function _updateDebugEvents() {
     btn.textContent = '▶ 発火';
     btn.addEventListener('click', () => {
       audioManager.unlock();
-      // engine.debugForce handles onExit for current event and onEventFire for new
-      // (onEventFire calls showContent, so no need to call hideContent here)
       engine.debugForce(s.id);
       document.getElementById('debug-panel').classList.remove('open');
     });
@@ -821,7 +755,6 @@ function _updateDebugLog() {
   dbgLog.scrollTop = dbgLog.scrollHeight;
 }
 
-// ── Debug panel events ────────────────────────────────────────────
 document.getElementById('debug-toggle').addEventListener('click', () => {
   const p = document.getElementById('debug-panel');
   p.classList.toggle('open');
@@ -834,7 +767,6 @@ document.getElementById('debug-close').addEventListener('click', () => {
 
 document.getElementById('dbg-exit-btn').addEventListener('click', () => {
   if (!engine) return;
-  // engine.debugExit() calls onEventExit (which calls content.onExit)
   engine.debugExit();
   hideContent();
   document.getElementById('debug-panel').classList.remove('open');
