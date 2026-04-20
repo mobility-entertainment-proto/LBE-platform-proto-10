@@ -35,6 +35,7 @@ export class FamilyQuiz {
     this._spokenResult = false;
     this._choiceRects = [];
     this._btnList = [];
+    this._revealedChoices = 0;
     this._introUntil = 0;
     this._countdownStart = 0;
     this._countdownTimer = null;
@@ -92,6 +93,7 @@ export class FamilyQuiz {
     this._result = null;
     this._choiceRects = [];
     this._btnList = [];
+    this._revealedChoices = 0;
     this._introUntil = performance.now() + 1100;
     this._announced10 = false;
     this._announced5 = false;
@@ -217,10 +219,11 @@ export class FamilyQuiz {
     const prompt = `${this._question.question}`;
     try { await this.audio?.speak(prompt, { rate: 0.92 }); } catch (_) {}
     if (this._exited) return;
-    // 選択肢を読み上げ
+    // 選択肢を1つずつ表示してから読み上げ
     const choices = this._question.choices || [];
     for (let i = 0; i < choices.length; i++) {
       if (this._exited) return;
+      this._revealedChoices = i + 1;
       try { await this.audio?.speak(`${i + 1}番、${choices[i]}`, { rate: 0.92 }); } catch (_) {}
     }
     if (this._exited) return;
@@ -344,6 +347,32 @@ export class FamilyQuiz {
   _drawReading() {
     const c = this.ctx;
     this._drawQuestionPanel('QUESTION', this._question?.question || '', '問題を読み上げ中...');
+
+    if (!this._revealedChoices) return;
+    const cardW = Math.min(this.W * 0.88, 620);
+    const cardH = Math.min(this.H * 0.10, 88);
+    const gap = Math.min(12, this.H * 0.015);
+    const startY = this.H * 0.43;
+
+    for (let i = 0; i < this._revealedChoices; i++) {
+      const x = (this.W - cardW) / 2;
+      const y = startY + i * (cardH + gap);
+      const isActive = i === this._revealedChoices - 1;
+
+      c.fillStyle = isActive ? CHOICE_COLORS[i] : CHOICE_BG[i];
+      this._rrFill(x, y, cardW, cardH, 18);
+      c.strokeStyle = CHOICE_COLORS[i];
+      c.lineWidth = isActive ? 3 : 2;
+      this._rrFill(x, y, cardW, cardH, 18, true);
+
+      c.fillStyle = isActive ? '#04101f' : '#eef6ff';
+      c.font = `bold ${Math.max(18, this.H * 0.024) | 0}px sans-serif`;
+      c.textAlign = 'left';
+      c.fillText(`${i + 1}.`, x + 18, y + cardH * 0.58);
+
+      c.font = `bold ${Math.max(20, this.H * 0.03) | 0}px sans-serif`;
+      this._wrapText(this._question.choices[i], x + 64, y + cardH * 0.56, cardW - 84, Math.max(24, this.H * 0.034));
+    }
   }
 
   _drawChoosing() {
