@@ -413,27 +413,35 @@ destSelect.addEventListener('change', () => {
 
 // ── Build content plan from JSONs ─────────────────────────────────
 async function buildPlan(route) {
-  const [guidesData, quizzesData] = await Promise.all([
+  const [guidesData, quizzesData1, quizzesData2] = await Promise.all([
     fetch('data/guides.json').then(r => r.json()),
     fetch('data/quizzes.json').then(r => r.json()),
+    fetch('data/quizzes2.json').then(r => r.json()),
   ]);
 
   const guides  = guidesData.items
     .filter(g => g.route === route)
     .sort((a, b) => a.segment_index - b.segment_index);
-  const quizzes = quizzesData.items
-    .filter(q => q.route === route)
-    .sort((a, b) => a.segment_index - b.segment_index);
+
+  // 両ファイルのクイズをマージ
+  const allQuizItems = [
+    ...quizzesData1.items.filter(q => q.route === route),
+    ...quizzesData2.items.filter(q => q.route === route),
+  ];
 
   const plan = [];
   const maxSeg = Math.max(
-    guides.length  ? guides[guides.length - 1].segment_index  : 0,
-    quizzes.length ? quizzes[quizzes.length - 1].segment_index : 0
+    guides.length      ? guides[guides.length - 1].segment_index      : 0,
+    allQuizItems.length ? allQuizItems.reduce((m, q) => Math.max(m, q.segment_index), 0) : 0
   );
 
   for (let seg = 1; seg <= maxSeg; seg++) {
     const guide = guides.find(g => g.segment_index === seg);
-    const quiz  = quizzes.find(q => q.segment_index === seg);
+    // 同セグメントの全クイズ候補をシャッフルして先頭を選ぶ
+    const quizCandidates = allQuizItems
+      .filter(q => q.segment_index === seg)
+      .sort(() => Math.random() - 0.5);
+    const quiz = quizCandidates[0] || null;
 
     let chosen, type;
     if (seg === 1) {
